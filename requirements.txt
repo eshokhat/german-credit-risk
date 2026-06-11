@@ -1,0 +1,9 @@
+# German Credit Fairness Audit
+# Python 3.10+
+
+numpy
+pandas
+matplotlib
+seaborn
+scikit-learn
+ucimlrepo
