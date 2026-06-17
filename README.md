@@ -76,7 +76,7 @@ use `is_young` (Age ≤ 25) as the sensitive attribute.
   into the splitting criterion.
 - **Post-training — Group thresholds**: Separate classification thresholds are
   applied after training — a higher threshold for young applicants
-  (`THRESHOLD_YOUNG = 0.35`) and a standard threshold for others
+  (`THRESHOLD_YOUNG = 0.40`) and a standard threshold for others
   (`THRESHOLD_OTHER = 0.30`). No retraining is required.
 
 | Model | ROC-AUC | Accuracy | DP gap (age) |
@@ -84,7 +84,7 @@ use `is_young` (Age ≤ 25) as the sensitive attribute.
 | Baseline RF | 0.7930 | 0.6700 | 0.2308 |
 | Pre-Training (Reweighing) | 0.7900 | 0.6400 | 0.1142 |
 | In-Training (Cost Weights 1:5) | 0.7933 | 0.4900 | 0.1783 |
-| Post-Training (Group Thresholds) | 0.7930 | 0.5200 | 0.1131 |
+| Post-Training (Group Thresholds) | 0.7930 | 0.5350 | 0.0449 |
 
 ### 4. Feature Importance
 
@@ -109,9 +109,10 @@ predictive signal — the structural cause of the amplified DP gap.
   methods brings the DP gap below the bank's original 0.198, demonstrating
   that fairness improvements are achievable without discarding the model.
 - **Best result**: Post-training group thresholds achieve the lowest DP gap
-  (0.113) while maintaining the same ROC-AUC as the baseline (0.793). The
-  threshold values are exposed as variables in the notebook and can be adjusted
-  to explore the fairness-accuracy tradeoff.
+  (0.045) while maintaining the same ROC-AUC as the baseline (0.793), at a
+  larger accuracy cost than reweighing (0.535 vs 0.640). The threshold values
+  are exposed as variables in the notebook and can be adjusted to explore the
+  fairness-accuracy tradeoff.
 - **Age as a model feature**: Age accounts for 5.7% of total feature
   importance — confirming it is not only a correlate of financial risk but a
   direct input to the model's decisions.
@@ -123,8 +124,8 @@ predictive signal — the structural cause of the amplified DP gap.
 A Random Forest trained on historical bank credit decisions inherits and
 amplifies the age-based disparity present in the training data. However, all
 three lifecycle interventions successfully reduce the DP gap below the bank's
-own level. The best result (DP gap = 0.113, achieved by post-training threshold
-adjustment) represents a 43% reduction relative to the bank's original gap of
+own level. The best result (DP gap = 0.045, achieved by post-training threshold
+adjustment) represents a 77% reduction relative to the bank's original gap of
 0.198 — without any loss in discriminative power (ROC-AUC = 0.793).
 
 This confirms that fairness improvements are achievable within the existing

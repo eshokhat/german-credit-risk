@@ -7,7 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/1uJtDeygw9XpPdglz-nMIKZ8pg0ZeYQPO
 
 # STAGE 1: Data Preparation & Ground Truth Generation
-**Dataset:** Statlog (German Credit Data) — UCI ML Repository (ID: 144)  
+**Dataset:** Statlog (German Credit Data) — UCI ML Repository (ID: 144)
 **Goal:** Load data, perform descriptive analysis, engineer features, generate Ground Truth labels, and produce clean train/test splits ready for Random Forest training.
 
 ## 0. Install dependencies
@@ -877,11 +877,11 @@ The comparison table in section 3.5 will update automatically.
 """
 
 # ── ADJUST THESE VALUES TO EXPERIMENT ────────────────────────────────────────
-THRESHOLD_YOUNG = 0.35   # flag threshold for applicants aged <= 25
-THRESHOLD_OTHER = 0.30   # flag threshold for all other applicants
+THRESHOLD_YOUNG = 0.4   # flag threshold for applicants aged <= 25
+THRESHOLD_OTHER = 0.3   # flag threshold for all other applicants
 # ─────────────────────────────────────────────────────────────────────────────
 # Raising THRESHOLD_YOUNG reduces the Bad-label rate for young applicants.
-# Try values between 0.25 and 0.55 to explore the fairness tradeoff.
+# Try values different between to explore the fairness tradeoff.
 
 is_young_test = (young_test == 1).values
 y_pred_thresh = np.where(
