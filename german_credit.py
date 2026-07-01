@@ -23,6 +23,7 @@ import matplotlib.ticker as mtick
 import seaborn as sns
 from ucimlrepo import fetch_ucirepo
 from sklearn.model_selection import train_test_split
+from scipy import stats
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -268,7 +269,13 @@ plt.savefig('plot_marital.png', bbox_inches='tight')
 plt.show()
 
 # Summary of approval rate gaps across all three demographic attributes.
-# This justifies focusing the fairness analysis on age.
+# P-values from chi-squared tests on approval/denial contingency tables.
+
+def chi2_pvalue(df_src, group_col, outcome_col, approved_label='Approved'):
+    """Return the chi-squared p-value for independence of group_col and outcome_col."""
+    ct = pd.crosstab(df_src[group_col], df_src[outcome_col] == approved_label)
+    _, p, _, _ = stats.chi2_contingency(ct, correction=False)
+    return p
 
 gap_rows = []
 
@@ -282,6 +289,7 @@ gap_rows.append({
     'Approval B (%)': round(sex_approved.get('female', 0), 1),
     'Gap (pp)'      : round(abs(sex_approved.get('male', 0) -
                                 sex_approved.get('female', 0)), 1),
+    'p-value'       : chi2_pvalue(df, '_sex', '_approved'),
 })
 
 young_approved = df.groupby('_is_young')['_approved'].apply(
@@ -294,6 +302,7 @@ gap_rows.append({
     'Approval B (%)': round(young_approved.get('Age ≤ 25', 0), 1),
     'Gap (pp)'      : round(abs(young_approved.get('Age > 25', 0) -
                                 young_approved.get('Age ≤ 25', 0)), 1),
+    'p-value'       : chi2_pvalue(df, '_is_young', '_approved'),
 })
 
 mar_approved = df.groupby('_marital')['_approved'].apply(
@@ -305,22 +314,24 @@ gap_rows.append({
     'Group B'       : mar_approved.idxmin(),
     'Approval B (%)': round(mar_approved.min(), 1),
     'Gap (pp)'      : round(mar_approved.max() - mar_approved.min(), 1),
+    'p-value'       : chi2_pvalue(df, '_marital', '_approved'),
 })
 
 gap_df = pd.DataFrame(gap_rows).set_index('Attribute')
 
-print("=" * 70)
+print("=" * 78)
 print("  EDA SUMMARY — Approval Rate Gaps by Demographic Attribute")
-print("=" * 70)
+print("=" * 78)
 display(gap_df)
 print()
-print("Interpretation:")
+print("Interpretation (significance threshold α = 0.05):")
 for attr, row in gap_df.iterrows():
-    flag = "  <-- substantial gap" if row['Gap (pp)'] >= 10 else ""
-    print(f"  {attr:<38} gap = {row['Gap (pp)']:>5.1f} pp{flag}")
+    sig = "  *" if row['p-value'] < 0.05 else "   (not significant)"
+    print(f"  {attr:<38} gap = {row['Gap (pp)']:>5.1f} pp   p = {row['p-value']:.4f}{sig}")
 print()
-print("Conclusion: age shows a substantially larger approval gap than sex or")
-print("marital status. The fairness analysis in Stages 2-5 will focus on age.")
+print("Note: only attributes marked * have a statistically significant difference")
+print("in approval rates. The fairness focus for Stages 2-5 follows from both")
+print("the magnitude of the gap and its statistical significance.")
 
 # Age group approval rates — the primary fairness focus of this project.
 fig, axes = plt.subplots(1, 2, figsize=(12, 4), facecolor=C_BG)

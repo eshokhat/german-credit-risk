@@ -39,10 +39,34 @@ No simulation of default outcomes is introduced. The model learns to reproduce
 the bank's classification logic, and fairness is measured as the degree to
 which those reproduced decisions are applied equally across age groups.
 
-Exploratory Data Analysis confirmed that the Demographic Parity (DP) gap for
-age (14.9 percentage points) was substantially larger than the gaps observed for
-sex (7.5 pp) or marital status (13.4 pp), motivating the selection of age as
-the primary protected attribute.
+Exploratory Data Analysis identified approval rate gaps across three demographic
+attributes. Chi-squared tests (α = 0.05) were applied to each contingency table
+to verify statistical significance before drawing any conclusions about focus:
+
+| Attribute | Gap (pp) | p-value | Significant? |
+|---|---|---|---|
+| Sex (Male vs Female) | 7.5 | 0.0170 | Yes |
+| Age (Young ≤25 vs Other) | 14.9 | 0.0001 | Yes |
+| Marital Status (max spread) | 13.4 | 0.0222 | Yes |
+
+All three gaps are statistically significant. The project nonetheless focuses on
+**age as the sole protected attribute** for the following reasons:
+
+1. **Strength of evidence**: Age's p-value (0.0001) is roughly 170–430× smaller
+   than those for sex and marital status. The signal is categorically stronger,
+   not merely incrementally so.
+2. **Effect size**: Age also has the largest absolute gap (14.9 pp), so both
+   statistical and practical significance point in the same direction.
+3. **Structural collinearity of sex and marital status**: Both variables are
+   decoded from the same raw field (`Attribute9`). The female category maps
+   exclusively onto two marital-status codes, meaning the marital-status gap is
+   not independent of the sex gap — they are partial views of the same
+   underlying attribute. Treating them as three separate significant findings
+   would be misleading.
+
+This is a principled narrowing of scope, not an omission. The p-values above
+are reported in full so that readers can assess the evidence for all three
+attributes.
 
 ### 2. Baseline Model
 

@@ -9,6 +9,6 @@ wheels/
 # Virtual environments
 .venv
 plots/
-
+.gitignore
 Credit_Risk_Analysis.docx
 Credit_Risk.pptx
