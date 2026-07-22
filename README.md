@@ -79,13 +79,17 @@ and evaluated on two dimensions:
   difference in Bad-label rates between young applicants (Age ≤ 25) and the
   reference group (Age > 25).
 
-The baseline model (ROC-AUC = 0.793) successfully learned the bank's decision
-boundaries but amplified the existing age disparity:
+The baseline model (ROC-AUC = 0.793, Accuracy = 0.665) successfully learned the
+bank's decision boundaries but amplified the existing age disparity:
 
 | | DP gap (age) |
 |---|---|
 | Bank (original) | 0.1981 |
-| Baseline RF | 0.2308 (+0.033) |
+| Baseline RF | 0.2080 (+0.010) |
+
+At the decision threshold of 0.4, the baseline model's confusion matrix on the
+200-applicant test set is: 80 true negatives, 60 false positives, 7 false
+negatives, and 53 true positives (Bad-label recall = 0.88).
 
 ### 3. Fairness Interventions
 
@@ -105,10 +109,10 @@ use `is_young` (Age ≤ 25) as the sensitive attribute.
 
 | Model | ROC-AUC | Accuracy | DP gap (age) |
 |---|---|---|---|
-| Baseline RF | 0.7930 | 0.6700 | 0.2308 |
-| Pre-Training (Reweighing) | 0.7900 | 0.6400 | 0.1142 |
-| In-Training (Cost Weights 1:5) | 0.7933 | 0.4900 | 0.1783 |
-| Post-Training (Group Thresholds) | 0.7930 | 0.5350 | 0.0449 |
+| Baseline RF | 0.7933 | 0.665 | 0.2080 |
+| Pre-Training (Reweighing) | 0.7908 | 0.640 | 0.1142 |
+| In-Training (Cost Weights 1:5) | 0.7930 | 0.490 | 0.1783 |
+| Post-Training (Group Thresholds) | 0.7933 | 0.525 | 0.0157 |
 
 ### 4. Feature Importance
 
@@ -117,26 +121,45 @@ to show the contribution of each original attribute. This reveals whether the
 model relies on financial behavioural signals or on protected demographic
 features, providing transparency into the mechanism of learned bias.
 
+| Feature | Aggregated MDI share |
+|---|---|
+| Checking Account Status | 0.2066 |
+| Loan Duration (months) | 0.0896 |
+| Loan Amount | 0.0888 |
+| Credit History | 0.0669 |
+| Savings Account | 0.0653 |
+| Property | 0.0589 |
+| **Age (years)** | **0.0572** |
+| Loan Purpose | 0.0563 |
+| Employment Duration | 0.0557 |
+| Other Installment Plans | 0.0360 |
+| Installment Rate (% income) | 0.0274 |
+| Housing | 0.0271 |
+| Residence Duration (years) | 0.0251 |
+| Job Type | 0.0247 |
+| Telephone Registered | 0.0205 |
+
 Age ranks 7th in aggregated MDI share (0.057), ahead of several features with
-clear financial content. This confirms that the model uses age directly as a
-predictive signal — the structural cause of the amplified DP gap.
+clear financial content (Loan Purpose, Employment Duration). This confirms that
+the model uses age directly as a predictive signal — the structural cause of
+the amplified DP gap.
 
 ---
 
 ## Key Findings
 
 - **Bias amplification**: The baseline model increases the age-based DP gap
-  from the bank's 0.198 to 0.231. A model trained on historical decisions does
+  from the bank's 0.198 to 0.208. A model trained on historical decisions does
   not reproduce them neutrally — it applies the embedded pattern more
   consistently than any individual human decision-maker.
 - **All interventions reduce the gap below bank level**: Each of the three
   methods brings the DP gap below the bank's original 0.198, demonstrating
   that fairness improvements are achievable without discarding the model.
 - **Best result**: Post-training group thresholds achieve the lowest DP gap
-  (0.045) while maintaining the same ROC-AUC as the baseline (0.793), at a
-  larger accuracy cost than reweighing (0.535 vs 0.640). The threshold values
-  are exposed as variables in the notebook and can be adjusted to explore the
-  fairness-accuracy tradeoff.
+  (0.016) — effectively closing the age gap — while maintaining the same
+  ROC-AUC as the baseline (0.793), at a larger accuracy cost than reweighing
+  (0.525 vs 0.640). The threshold values are exposed as variables in the
+  notebook and can be adjusted to explore the fairness-accuracy tradeoff.
 - **Age as a model feature**: Age accounts for 5.7% of total feature
   importance — confirming it is not only a correlate of financial risk but a
   direct input to the model's decisions.
@@ -148,8 +171,8 @@ predictive signal — the structural cause of the amplified DP gap.
 A Random Forest trained on historical bank credit decisions inherits and
 amplifies the age-based disparity present in the training data. However, all
 three lifecycle interventions successfully reduce the DP gap below the bank's
-own level. The best result (DP gap = 0.045, achieved by post-training threshold
-adjustment) represents a 77% reduction relative to the bank's original gap of
+own level. The best result (DP gap = 0.016, achieved by post-training threshold
+adjustment) represents a 92% reduction relative to the bank's original gap of
 0.198 — without any loss in discriminative power (ROC-AUC = 0.793).
 
 This confirms that fairness improvements are achievable within the existing
